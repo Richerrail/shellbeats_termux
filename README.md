@@ -5,7 +5,7 @@ https://shellbeats.com
 
 👉 [Playing YouTube from the Command Line – HackaDay](https://hackaday.com/2026/01/31/playing-youtube-from-the-command-line/)
 
-<img src="https://surikata.app/favicon.ico" width="20" height="20"> [Surikata.app –  Guild](https://surikata.app/g/9fa4af84829f)
+<img src="https://surikata.app/favicon.ico" width="20" height="20"> [Surikata.app –  Guild](https://surikata.app/g/9fa4af84829f)  -> **We are looking for 12 betatester on surikata.app PlayStore App, if you are interested please sign-in and contact me on SurikataNews Guild!**
 
 ## Updates
 
