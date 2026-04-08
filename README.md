@@ -8,10 +8,12 @@ https://shellbeats.com
 **We are looking for 12 betatester on surikata.app PlayStore App, if you are interested please sign-in and contact me on SurikataNews Guild!**
 
 ## Updates
+**Now ShellbeatsNG is available running on GUI for Windows and Mac Users**
 
-I apologize for the absence I've been pouring every minute of my free time into the countless requests from users asking for "more tools like shellbeats." I'm about to officially go live with [surikata.app](https://surikata.app): it's a bit like what I always imagined the internet could be without the influence of big corps and marketing. It's a community built around maximum creative freedom and privacy. Through Surikata you can generate a token and keep a copy of your playlists, sync multiple PCs with the same playlists, and import (add-only) playlists shared by other users. To everyone who has appreciated shellbeats, I'm asking you to help me bring surikata.app to life we've submitted for publication on the App Store and Play Store, fingers crossed they approve us!
+<img src="shellbeatsng.webp" alt="SHELLBEATS-NG" width="50%">
 
-Previously: sorry for the delay on Unicode support doing it properly would require an additional dependency I'd prefer to avoid. I kindly ask for your patience on that front.
+You can download it here 
+[![Shellbeats NG Windows and OSX Version]](https://surikata.app/g/9fa4af84829f)
 
 **v0.7**
 - Fixed **pause state desync**: switching playlist and starting a new song while paused no longer causes inverted pause/play state. mpv is now explicitly unpaused on every `loadfile`.
