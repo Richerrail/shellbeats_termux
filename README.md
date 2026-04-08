@@ -8,7 +8,7 @@ https://shellbeats.com
 **We are looking for 12 betatester on surikata.app PlayStore App, if you are interested please sign-in and contact me on SurikataNews Guild!**
 
 ## Updates
-**Now ShellbeatsNG is available running on GUI for Windows and Mac Users**
+**ShellbeatsNG is now available: a graphical version that does not require using the terminal or compiling the software, for both Windows and Mac users.**
 
 <img src="shellbeatsng.webp" alt="SHELLBEATS-NG" width="50%">
 
