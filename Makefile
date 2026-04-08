@@ -1,6 +1,6 @@
 # ShellBeats Makefile
 CC = gcc
-CFLAGS = -Wall -Wextra -O2 -pthread
+CFLAGS = -std=c17 -Wall -Wextra -O2 -pthread
 LDFLAGS = -lncursesw -lcurl -lcjson -pthread
 
 # macOS: Homebrew paths

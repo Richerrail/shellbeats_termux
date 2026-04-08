@@ -2117,16 +2117,24 @@ static bool mpv_check_track_end(void) {
     buf[n] = '\0';
     sb_log("[PLAYBACK] mpv_check_track_end: IPC data received (%zd bytes): %.200s", n, buf);
 
-    // Only trigger on end-file event with reason "eof" (not "error" or "stop")
+    // Check for end-file event with reason "eof"
     // Format: {"event":"end-file","reason":"eof",...}
     if (strstr(buf, "\"event\":\"end-file\"") && strstr(buf, "\"reason\":\"eof\"")) {
-        sb_log("[PLAYBACK] mpv_check_track_end: track ended (EOF)");
+        sb_log("[PLAYBACK] mpv_check_track_end: track ended (end-file EOF)");
         return true;
     }
 
-    // Log if there's an end-file with error reason (useful for debugging stream failures)
+    // Check for eof-reached property change (observed via observe_property)
+    // Format: {"event":"property-change","name":"eof-reached","data":true}
+    if (strstr(buf, "\"eof-reached\"") && strstr(buf, "\"data\":true")) {
+        sb_log("[PLAYBACK] mpv_check_track_end: track ended (eof-reached property)");
+        return true;
+    }
+
+    // Also treat end-file with error as track end (skip to next instead of hanging)
     if (strstr(buf, "\"event\":\"end-file\"") && strstr(buf, "\"reason\":\"error\"")) {
-        sb_log("[PLAYBACK] mpv_check_track_end: WARNING - track ended with ERROR");
+        sb_log("[PLAYBACK] mpv_check_track_end: track ended with ERROR, advancing");
+        return true;
     }
 
     return false;
