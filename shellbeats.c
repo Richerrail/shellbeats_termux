@@ -236,7 +236,6 @@ typedef struct {
 
 static pid_t mpv_pid = -1;
 static int mpv_ipc_fd = -1;
-static volatile sig_atomic_t got_sigchld = 0;
 
 // NEW: Global pointer for download thread access
 static AppState *g_app_state = NULL;
