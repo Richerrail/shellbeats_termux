@@ -15,6 +15,9 @@ https://shellbeats.com
 You can download it here 
 [![Shellbeats NG Windows and OSX Version]](https://surikata.app/g/9fa4af84829f)
 
+**v0.7.1**
+- **Security fix**: shell command injection in playlist download and related yt-dlp calls. A crafted `video_id` in a playlist JSON (e.g. imported via SuriSync or a shared `.json` file) could break out of the quoted URL passed to `system()`/`popen()` and run arbitrary commands. All call sites that interpolate external data now use `fork()` + `execvp()` via the new `sb_exec` wrapper, so no shell is invoked and no metacharacter is interpreted. Added defensive `is_valid_video_id()` validation at JSON load time.
+
 **v0.7**
 - Added Cookies for yt-dlp management because some ip's were blocked by youtube, you can now import cookies from browse, guide here [![Shellbeats Cookie Management]](https://surikata.app/g/9fa4af84829f)
 - Fixed **pause state desync**: switching playlist and starting a new song while paused no longer causes inverted pause/play state. mpv is now explicitly unpaused on every `loadfile`.
@@ -35,17 +38,7 @@ You can download it here
 - Added **YouTube playlist sync** (`u` key): update imported YouTube playlists with new songs added on YouTube.
 - New Settings options: Seek Step (configurable), Remember Session (toggle), Shuffle Mode (toggle).
 
-**v0.5**
-- Fixed streaming on systems where mpv couldn't find yt-dlp: mpv now receives the correct yt-dlp path via `--script-opts=ytdl_hook-ytdl_path=...`, so streaming works even when yt-dlp is not in the system PATH.
-- Added detailed playback logging (enabled with `-log` flag). All playback operations are now traced with `[PLAYBACK]` prefix: mpv startup, IPC connection, URL loading, search commands, track end detection, and stream errors. Useful for debugging playback issues on different systems.
-- YouTube Playlist integration is now documented in this README (see below).
-- Some bugfixes.
-
-**v0.4**
-- Now you can download or stream entire playlists from YouTube just by pasting the link in the terminal, thanks to ***kathiravanbtm***.
-- Some bugfixes.
-
-# shellbeats V0.7
+# shellbeats V0.7.1
 
 ![Demo](shellbeats.gif)
 
