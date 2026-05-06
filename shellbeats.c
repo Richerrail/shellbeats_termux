@@ -34,7 +34,19 @@
 #define SHELLBEATS_VERSION "0.7.2"
 #define MAX_PLAYLISTS 300
 #define MAX_PLAYLIST_ITEMS 500
-#define IPC_SOCKET "/tmp/shellbeats_mpv.sock"
+/* IPC_SOCKET is now set at runtime via get_ipc_socket() to support Termux
+ * (Android) where /tmp does not exist and $TMPDIR must be used instead.    */
+static char g_ipc_socket[1024] = "";
+static const char *get_ipc_socket(void) {
+    if (g_ipc_socket[0] == '\0') {
+        const char *tmpdir = getenv("TMPDIR");
+        if (!tmpdir || tmpdir[0] == '\0') tmpdir = "/tmp";
+        snprintf(g_ipc_socket, sizeof(g_ipc_socket),
+                 "%s/shellbeats_mpv.sock", tmpdir);
+    }
+    return g_ipc_socket;
+}
+#define IPC_SOCKET (get_ipc_socket())
 #define CONFIG_DIR ".shellbeats"
 #define PLAYLISTS_DIR "playlists"
 #define PLAYLISTS_INDEX "playlists.json"
@@ -580,7 +592,8 @@ static char *json_get_string(const char *json, const char *key) {
 static bool init_config_dirs(AppState *st) {
     const char *home = getenv("HOME");
     if (!home) {
-        home = "/tmp";
+        home = getenv("TMPDIR");
+        if (!home || home[0] == '\0') home = "/tmp";
     }
 
     // XDG_CONFIG_HOME support: prefer $XDG_CONFIG_HOME/shellbeats if it exists
@@ -1016,7 +1029,9 @@ static void *deno_install_thread_func(void *arg) {
 
     // Download to /tmp
     char zip_path[1024];
-    snprintf(zip_path, sizeof(zip_path), "/tmp/shellbeats_deno_%d.zip", (int)getpid());
+    const char *_tmpdir = getenv("TMPDIR");
+    if (!_tmpdir || _tmpdir[0] == '\0') _tmpdir = "/tmp";
+    snprintf(zip_path, sizeof(zip_path), "%s/shellbeats_deno_%d.zip", _tmpdir, (int)getpid());
 
     bool has_curl = (system("command -v curl >/dev/null 2>&1") == 0);
     bool has_wget = (system("command -v wget >/dev/null 2>&1") == 0);
@@ -1163,11 +1178,22 @@ static RepeatMode next_repeat_mode(RepeatMode mode) {
 
 static void init_default_config(AppState *st) {
     const char *home = getenv("HOME");
-    if (!home) home = "/tmp";
+    if (!home) {
+        home = getenv("TMPDIR");
+        if (!home || home[0] == '\0') home = "/tmp";
+    }
 
-    // Default download path: ~/Music/shellbeats
-    snprintf(st->config.download_path, sizeof(st->config.download_path),
-             "%s/Music/shellbeats", home);
+    /* On Termux (Android) ~/Music may not exist; use ~/storage/music if the
+     * Termux storage permission has been granted, otherwise fall back to
+     * ~/Music/shellbeats (the directory is created on first download).       */
+    const char *ext_storage = getenv("EXTERNAL_STORAGE");
+    if (ext_storage && ext_storage[0]) {
+        snprintf(st->config.download_path, sizeof(st->config.download_path),
+                 "%s/Music/shellbeats", ext_storage);
+    } else {
+        snprintf(st->config.download_path, sizeof(st->config.download_path),
+                 "%s/Music/shellbeats", home);
+    }
 
     // Default seek step: 10 seconds
     st->config.seek_step = 10;
@@ -2492,6 +2518,11 @@ static void mpv_start_if_needed(AppState *st) {
             dup2(fd, STDERR_FILENO);
             close(fd);
         }
+        // Build --input-ipc-server= argument dynamically so it works on Termux
+        // (Android) where $TMPDIR is used instead of /tmp.
+        char ipc_arg[1060];
+        snprintf(ipc_arg, sizeof(ipc_arg), "--input-ipc-server=%s", IPC_SOCKET);
+
         // --ytdl-format=bestaudio ensures yt-dlp picks an audio stream that
         // mpv can play (default selector may pick storyboard/HLS that mpv
         // can't handle, causing "unrecognized file format" errors).
@@ -2501,7 +2532,7 @@ static void mpv_start_if_needed(AppState *st) {
                    "--idle=yes",
                    "--force-window=no",
                    "--really-quiet",
-                   "--input-ipc-server=" IPC_SOCKET,
+                   ipc_arg,
                    "--ytdl-format=bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio",
                    ytdl_opt,
                    ytdl_cookie_opt,
@@ -2512,7 +2543,7 @@ static void mpv_start_if_needed(AppState *st) {
                    "--idle=yes",
                    "--force-window=no",
                    "--really-quiet",
-                   "--input-ipc-server=" IPC_SOCKET,
+                   ipc_arg,
                    "--ytdl-format=bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio",
                    ytdl_opt,
                    (char *)NULL);
@@ -4765,7 +4796,10 @@ int main(int argc, char *argv[]) {
         if (strcmp(argv[i], "-log") == 0 || strcmp(argv[i], "--log") == 0) {
             // Open log file early (before config dirs, use HOME directly)
             const char *home = getenv("HOME");
-            if (!home) home = "/tmp";
+            if (!home) {
+                home = getenv("TMPDIR");
+                if (!home || home[0] == '\0') home = "/tmp";
+            }
             char log_path[1024];
             snprintf(log_path, sizeof(log_path), "%s/.shellbeats/shellbeats.log", home);
             // Ensure .shellbeats exists
